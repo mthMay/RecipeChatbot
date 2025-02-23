@@ -55,7 +55,17 @@
     </category>
 
     <category>
-        <pattern>THANK YOU *</pattern>
+        <pattern>THANK YOU</pattern>
+        <template>
+            <random>
+                <li>You're welcome! Enjoy your meal!</li>
+                <li>My pleasure! See you again.</li>
+            </random>
+        </template>
+    </category>
+
+    <category>
+        <pattern>THANKS</pattern>
         <template>
             <random>
                 <li>You're welcome! Enjoy your meal!</li>
