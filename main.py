@@ -1,12 +1,12 @@
 import asyncio
-
+import requests
 import aiml
 import nltk
 import pyttsx3
 import pandas as pd
 import speech_recognition as sr
 from googletrans import Translator
-import googletrans
+from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -55,7 +55,9 @@ def find_best_match(user_input):
     input_vectors = vectorizer.transform([user_input])
     cosine_similarity_tfidf = cosine_similarity(input_vectors, q_vectors)
     max_index = cosine_similarity_tfidf.argmax(axis=1)[0]
-    # best_score = cosine_similarity_tfidf[0, max_index]
+    best_score = cosine_similarity_tfidf[0, max_index]
+    if best_score < 0.5:
+        return None
     return qa.iloc[max_index]["answer"]
 
 # code for translation referenced from https://www.youtube.com/watch?v=CkPvqLvuq2A&t=517s (3CodeCamp, 2024)
@@ -75,9 +77,34 @@ async def async_translate(text, target_language):
     return translated.text
 
 def translate(text, target_language):
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
     return loop.run_until_complete(async_translate(text, target_language))
 # print(googletrans.LANGUAGES)
+
+# code referenced from https://www.youtube.com/watch?v=8dTpNajxaH0&t=180s (Alex The Analyst, 2024)
+def get_recipe(ingredient):
+    search_url = f"https://www.bbcgoodfood.com/search/recipes?q={ingredient.replace(' ', '+')}"
+    response = requests.get(search_url, headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+})
+
+    if response.status_code != 200:
+        return "Sorry, I couldn't find that recipe right now. Try again later."
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+    recipes = soup.find_all("h2", class_="heading-4")
+
+    if not recipes:
+        return "No recipes found for that ingredient."
+
+    recipe = recipes[0].text.strip()
+    endpoint = recipes[0].find_parent("a")["href"]
+    recipe_url = f"https://www.bbcgoodfood.com{endpoint}"
+    return f"Here's a recipe for {recipe}. See recipe at:", recipe_url
 
 output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice? "
 print("Recipe Chatbot:",output)
@@ -128,7 +155,6 @@ while True:
                         break
                     else:
                         print("Recipe Chatbot: Invalid choice. Please enter 1 for Text or 2 for Voice.")
-
                 continue
             if user_input.lower() == "change language":
                 print("Recipe Chatbot: Choose a output language: English, Myanmar, French, Spanish, Chinese.")
@@ -148,8 +174,10 @@ while True:
 
             if not response or response.startswith("WARNING"):
                 response = find_best_match(user_input)
+            if not response:
+                response, recipe_url = get_recipe(user_input)
             translated_response = translate(response, language_code)
-            print("Recipe Chatbot:", translated_response)
+            print("Recipe Chatbot:", translated_response, recipe_url)
 
         elif mode == "2":
             user_input = listen()
@@ -178,7 +206,9 @@ while True:
 
             if not response or response.startswith("WARNING"):
                 response = find_best_match(user_input)
-            print("Recipe Chatbot (Voice):", response)
+            if not response:
+                response, recipe_url = get_recipe(user_input)
+            print("Recipe Chatbot (Voice):", response, recipe_url)
             text_to_speech(response)
 
     except(KeyboardInterrupt, EOFError):
