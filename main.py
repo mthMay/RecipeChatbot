@@ -9,6 +9,8 @@ from googletrans import Translator
 from bs4 import BeautifulSoup
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import warnings
+warnings.filterwarnings("ignore")
 
 qa = pd.read_csv("q&a.csv", header=None, names=["question", "answer"])
 nltk.download('punkt')
@@ -78,7 +80,7 @@ async def async_translate(text, target_language):
 
 def translate(text, target_language):
     try:
-        loop = asyncio.get_running_loop()
+        loop = asyncio.get_event_loop()
     except RuntimeError:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
@@ -106,7 +108,7 @@ def get_recipe(ingredient):
     recipe_url = f"https://www.bbcgoodfood.com{endpoint}"
     return f"Here's a recipe for {recipe}. See recipe at:", recipe_url
 
-output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice? "
+output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice(English Only))? "
 print("Recipe Chatbot:",output)
 while True:
     mode = input("Enter choice (1 or 2): ").strip()
@@ -125,6 +127,7 @@ while True:
             else:
                 language_code = "en"
                 print("Language is set to English by default.")
+                break
         break
     elif mode == "2":
         print("Recipe Chatbot (Voice): You have chosen voice mode. Please say change voice to change chatbot mode.")
@@ -143,11 +146,17 @@ while True:
                 print("Recipe Chatbot:",translated_output)
                 break
             if user_input.lower() == "change mode":
-                print("Recipe Chatbot: Switching input mode. Would you like (1) Text or (2) Voice?")
+                output = "Switching input mode. Would you like (1) Text or (2) Voice(English Only)?"
+                translated_output = translate(output, language_code)
+                print("Recipe Chatbot:", translated_output)
                 while True:
-                    mode = input("Enter choice (1 or 2): ").strip()
+                    output = "Enter choice (1 or 2)"
+                    translated_output = translate(output, language_code)
+                    mode = input(f"Recipe Chatbot: {translated_output}: ").strip()
                     if mode == "1":
-                        print("Recipe Chatbot: You have chosen text mode. Please type 'change mode' to change chatbot mode.")
+                        output = "You have chosen text mode. Please type 'change mode' to change chatbot mode."
+                        translated_output = translate(output, language_code)
+                        print("Recipe Chatbot:", translated_output)
                         break
                     elif mode == "2":
                         print("Recipe Chatbot (Voice): You have chosen voice mode. Please say change voice to change chatbot mode.")
@@ -157,9 +166,13 @@ while True:
                         print("Recipe Chatbot: Invalid choice. Please enter 1 for Text or 2 for Voice.")
                 continue
             if user_input.lower() == "change language":
-                print("Recipe Chatbot: Choose a output language: English, Myanmar, French, Spanish, Chinese.")
+                output = "Choose a output language: English, Myanmar, French, Spanish, Chinese."
+                translated_output = translate(output, language_code)
+                print("Recipe Chatbot:", translated_output)
                 while True:
-                    chosen_language = input("Choose a language: ").strip().lower()
+                    output = "Choose a language"
+                    translated_output = translate(output, language_code)
+                    chosen_language = input(f"Recipe Chatbot: {translated_output}: ").strip().lower()
                     if chosen_language in languages:
                         language_code = languages[chosen_language]
                         output = f"You have chosen {chosen_language} language"
@@ -169,9 +182,10 @@ while True:
                     else:
                         language_code = "en"
                         print("Language is set to English by default.")
+                        break
                 continue
             response = kern.respond(user_input.upper())
-
+            recipe_url = ""
             if not response or response.startswith("WARNING"):
                 response = find_best_match(user_input)
             if not response:
@@ -203,7 +217,7 @@ while True:
 
                 continue
             response = kern.respond(user_input.upper())
-
+            recipe_url = ""
             if not response or response.startswith("WARNING"):
                 response = find_best_match(user_input)
             if not response:
