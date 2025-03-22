@@ -109,32 +109,32 @@ def get_recipe(ingredient):
     return f"Here's a recipe for {recipe}. See recipe at:", recipe_url
 
 output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice(English Only))? "
-print("Recipe Chatbot:",output)
+print(output)
 while True:
     mode = input("Enter choice (1 or 2): ").strip()
     if mode == "1":
         output = "You have chosen text mode. Please type 'change mode' to change chatbot mode or 'change language' to change output language."
-        print("Recipe Chatbot:", output)
-        print("Recipe Chatbot: Choose a output language: English, Myanmar, French, Spanish, Chinese.")
+        print(output)
+        print("Choose a output language: English, Myanmar, French, Spanish, Chinese.")
         while True:
             chosen_language = input("Choose a language: ").strip().lower()
             if chosen_language in languages:
                 language_code = languages[chosen_language]
                 output = f"You have chosen {chosen_language} language"
                 translated_output = translate(output, language_code)
-                print("Recipe Chatbot:", translated_output)
+                print(translated_output, "\n")
                 break
             else:
                 language_code = "en"
-                print("Language is set to English by default.")
+                print("Language is set to English by default.\n")
                 break
         break
     elif mode == "2":
-        print("Recipe Chatbot (Voice): You have chosen voice mode. Please say change voice to change chatbot mode.")
+        print("You have chosen voice mode. Please say change voice to change chatbot mode.\n")
         text_to_speech("You have chosen voice mode. Please say change voice to change chatbot mode.")
         break
     else:
-        print("Recipe Chatbot: Invalid choice. Please enter 1 for Text or 2 for Voice.")
+        print("Invalid choice. Please enter 1 for Text or 2 for Voice.\n")
 
 while True:
     try:
@@ -143,45 +143,45 @@ while True:
             if user_input.lower() == "exit" or user_input.lower() == "stop":
                 output = "Goodbye! Have fun cooking."
                 translated_output = translate(output, language_code)
-                print("Recipe Chatbot:",translated_output)
+                print(translated_output, "\n")
                 break
             if user_input.lower() == "change mode":
                 output = "Switching input mode. Would you like (1) Text or (2) Voice(English Only)?"
                 translated_output = translate(output, language_code)
-                print("Recipe Chatbot:", translated_output)
+                print(translated_output, "\n")
                 while True:
                     output = "Enter choice (1 or 2)"
                     translated_output = translate(output, language_code)
-                    mode = input(f"Recipe Chatbot: {translated_output}: ").strip()
+                    mode = input(f"{translated_output}: ").strip()
                     if mode == "1":
                         output = "You have chosen text mode. Please type 'change mode' to change chatbot mode."
                         translated_output = translate(output, language_code)
-                        print("Recipe Chatbot:", translated_output)
+                        print(translated_output, "\n")
                         break
                     elif mode == "2":
-                        print("Recipe Chatbot (Voice): You have chosen voice mode. Please say change voice to change chatbot mode.")
+                        print("You have chosen voice mode. Please say change voice to change chatbot mode.\n")
                         text_to_speech("You have chosen voice mode. Please say change voice to change chatbot mode.")
                         break
                     else:
-                        print("Recipe Chatbot: Invalid choice. Please enter 1 for Text or 2 for Voice.")
+                        print("Invalid choice. Please enter 1 for Text or 2 for Voice.\n")
                 continue
             if user_input.lower() == "change language":
                 output = "Choose a output language: English, Myanmar, French, Spanish, Chinese."
                 translated_output = translate(output, language_code)
-                print("Recipe Chatbot:", translated_output)
+                print(translated_output, "\n")
                 while True:
                     output = "Choose a language"
                     translated_output = translate(output, language_code)
-                    chosen_language = input(f"Recipe Chatbot: {translated_output}: ").strip().lower()
+                    chosen_language = input(f"{translated_output}: ").strip().lower()
                     if chosen_language in languages:
                         language_code = languages[chosen_language]
                         output = f"You have chosen {chosen_language} language"
                         translated_output = translate(output, language_code)
-                        print("Recipe Chatbot:", translated_output)
+                        print(translated_output, "\n")
                         break
                     else:
                         language_code = "en"
-                        print("Language is set to English by default.")
+                        print("Language is set to English by default.\n")
                         break
                 continue
             response = kern.respond(user_input.upper())
@@ -191,29 +191,29 @@ while True:
             if not response:
                 response, recipe_url = get_recipe(user_input)
             translated_response = translate(response, language_code)
-            print("Recipe Chatbot:", translated_response, recipe_url)
+            print(translated_response, recipe_url, "\n")
 
         elif mode == "2":
             user_input = listen()
             if user_input.lower() == "exit" or user_input.lower() == "stop":
                 output = "Goodbye! Have fun cooking."
-                print("Recipe Chatbot (Voice):", output)
+                print(output)
                 text_to_speech(output)
                 break
             if user_input.lower() == "change mode":
-                print("Recipe Chatbot (Voice): Switching input mode. Would you like (1) Text or (2) Voice?")
+                print("Switching input mode. Would you like (1) Text or (2) Voice?")
                 text_to_speech("Switching input mode. Would you like text or voice? Please enter one for text or two for voice.")
                 while True:
                     mode = input("Enter choice (1 or 2): ").strip()
                     if mode == "1":
-                        print("Recipe Chatbot: You have chosen text mode. Please type 'change mode' to change chatbot mode.")
+                        print("You have chosen text mode. Please type 'change mode' to change chatbot mode.\n")
                         break
                     elif mode == "2":
-                        print("Recipe Chatbot (Voice): You have chosen voice mode. Please say change voice to change chatbot mode.")
+                        print("You have chosen voice mode. Please say change voice to change chatbot mode.\n")
                         text_to_speech("You have chosen voice mode. Please say change voice to change chatbot mode.")
                         break
                     else:
-                        print("Recipe Chatbot: Invalid choice. Please enter 1 for Text or 2 for Voice.")
+                        print("Invalid choice. Please enter 1 for Text or 2 for Voice.\n")
 
                 continue
             response = kern.respond(user_input.upper())
@@ -222,10 +222,10 @@ while True:
                 response = find_best_match(user_input)
             if not response:
                 response, recipe_url = get_recipe(user_input)
-            print("Recipe Chatbot (Voice):", response, recipe_url)
+            print(response, recipe_url, "\n")
             text_to_speech(response)
 
     except(KeyboardInterrupt, EOFError):
-        print("Recipe Chatbot: Goodbye! Have fun cooking.")
+        print("Goodbye! Have fun cooking.")
         #text_to_speech("Goodbye! Have fun cooking.")
         break
