@@ -7,21 +7,55 @@ import pandas as pd
 import speech_recognition as sr
 from googletrans import Translator
 from bs4 import BeautifulSoup
+from nltk import WordNetLemmatizer
+from nltk.corpus import wordnet
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
 warnings.filterwarnings("ignore")
 
-qa = pd.read_csv("q&a.csv", header=None, names=["question", "answer"])
+# Only needs to be run once
 nltk.download('punkt')
-
-vectorizer = TfidfVectorizer()
-q_vectors = vectorizer.fit_transform(qa["question"])
+nltk.download('wordnet')
 
 kern = aiml.Kernel()
 kern.verbose(False)
 kern.setTextEncoding(None)
 kern.bootstrap(learnFiles="pattern.xml")
+
+# code referenced from https://www.machinelearningplus.com/nlp/lemmatization-examples-python/#wordnetlemmatizerwithappropriatepostag (Machine Learning Plus, 2018)
+lemmatizer = WordNetLemmatizer()
+
+def nltk_wordnet_tag(nltk_tag):
+    if nltk_tag.startswith('J'):
+        return wordnet.ADJ
+    elif nltk_tag.startswith('V'):
+        return wordnet.VERB
+    elif nltk_tag.startswith('R'):
+        return wordnet.ADV
+    elif nltk_tag.startswith('N'):
+        return wordnet.NOUN
+    else:
+        return None
+
+def lemmatize_sentence(sentence):
+    nltk_tagged = nltk.pos_tag(nltk.word_tokenize(sentence))
+    wn_tagged = map(lambda x: (x[0], nltk_wordnet_tag(x[1])), nltk_tagged)
+    words = []
+    for word, tag in wn_tagged:
+        if tag is None:
+            words.append(word)
+        else:
+            words.append(lemmatizer.lemmatize(word, tag))
+    return " ".join(words)
+
+def custom_tokenizer(text):
+    return lemmatize_sentence(text).split()
+
+qa = pd.read_csv("q&a.csv", header=None, names=["question", "answer"])
+
+vectorizer = TfidfVectorizer(tokenizer=custom_tokenizer)
+q_vectors = vectorizer.fit_transform(qa["question"])
 
 # code referenced from https://www.geeksforgeeks.org/convert-text-speech-python/ (GeeksforGeeks, 2024)
 engine = pyttsx3.init()
@@ -58,7 +92,7 @@ def find_best_match(user_input):
     cosine_similarity_tfidf = cosine_similarity(input_vectors, q_vectors)
     max_index = cosine_similarity_tfidf.argmax(axis=1)[0]
     best_score = cosine_similarity_tfidf[0, max_index]
-    if best_score < 0.5:
+    if best_score <= 0.8:
         return None
     return qa.iloc[max_index]["answer"]
 
