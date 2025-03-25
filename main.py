@@ -92,7 +92,7 @@ def find_best_match(user_input):
     cosine_similarity_tfidf = cosine_similarity(input_vectors, q_vectors)
     max_index = cosine_similarity_tfidf.argmax(axis=1)[0]
     best_score = cosine_similarity_tfidf[0, max_index]
-    if best_score <= 0.8:
+    if best_score < 0.6:
         return None
     return qa.iloc[max_index]["answer"]
 
