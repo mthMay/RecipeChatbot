@@ -107,8 +107,6 @@ languages = {
 }
 
 async def async_translate(text, target_language):
-    if target_language == "en":
-        return text
     translated = await translator.translate(text, dest=target_language)
     return translated.text
 
@@ -174,12 +172,14 @@ while True:
     try:
         if mode == "1":
             user_input = input("You: ")
-            if user_input.lower() == "exit" or user_input.lower() == "stop":
+            translated_input = translate(user_input, "en")
+            print(translated_input, "\n")
+            if translated_input.lower() == "exit" or translated_input.lower() == "stop":
                 output = "Goodbye! Have fun cooking."
                 translated_output = translate(output, language_code)
                 print(translated_output, "\n")
                 break
-            if user_input.lower() == "change mode":
+            if translated_input.lower() == "change mode":
                 output = "Switching input mode. Would you like (1) Text or (2) Voice(English Only)?"
                 translated_output = translate(output, language_code)
                 print(translated_output, "\n")
@@ -187,19 +187,20 @@ while True:
                     output = "Enter choice (1 or 2)"
                     translated_output = translate(output, language_code)
                     mode = input(f"{translated_output}: ").strip()
-                    if mode == "1":
+                    translated_mode = translate(mode, "en").lower()
+                    if translated_mode == "1":
                         output = "You have chosen text mode. Please type 'change mode' to change chatbot mode."
                         translated_output = translate(output, language_code)
                         print(translated_output, "\n")
                         break
-                    elif mode == "2":
+                    elif translated_mode == "2":
                         print("You have chosen voice mode. Please say change voice to change chatbot mode.\n")
                         text_to_speech("You have chosen voice mode. Please say change voice to change chatbot mode.")
                         break
                     else:
                         print("Invalid choice. Please enter 1 for Text or 2 for Voice.\n")
                 continue
-            if user_input.lower() == "change language":
+            if translated_input.lower() == "change language":
                 output = "Choose a output language: English, Myanmar, French, Spanish, Chinese."
                 translated_output = translate(output, language_code)
                 print(translated_output, "\n")
@@ -207,9 +208,10 @@ while True:
                     output = "Choose a language"
                     translated_output = translate(output, language_code)
                     chosen_language = input(f"{translated_output}: ").strip().lower()
-                    if chosen_language in languages:
-                        language_code = languages[chosen_language]
-                        output = f"You have chosen {chosen_language} language"
+                    translated_chosen_language = translate(chosen_language, "en").lower()
+                    if translated_chosen_language in languages:
+                        language_code = languages[translated_chosen_language]
+                        output = f"You have chosen {translated_chosen_language} language"
                         translated_output = translate(output, language_code)
                         print(translated_output, "\n")
                         break
@@ -218,12 +220,12 @@ while True:
                         print("Language is set to English by default.\n")
                         break
                 continue
-            response = kern.respond(user_input.upper())
+            response = kern.respond(translated_input.upper())
             recipe_url = ""
             if not response or response.startswith("WARNING"):
-                response = find_best_match(user_input)
+                response = find_best_match(translated_input)
             if not response:
-                response, recipe_url = get_recipe(user_input)
+                response, recipe_url = get_recipe(translated_input)
             translated_response = translate(response, language_code)
             print(translated_response, recipe_url, "\n")
 
