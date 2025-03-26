@@ -1,23 +1,10 @@
 <aiml version="1.0.1" encoding="UTF-8">
     <category>
-        <pattern>HELLO *</pattern>
+        <pattern>HELLO</pattern>
         <template>
             <random>
                 <li>Hello! Welcome to the Recipe Chatbot. What type of recipe are you looking for?</li>
                 <li>Hello! This is Recipe Chatbot. How can I help you?</li>
-            </random>
-        </template>
-    </category>
-
-    <category>
-        <pattern>HELLO</pattern>
-        <template>Hello! Welcome to the Recipe Chatbot. What type of recipe are you looking for?</template>
-    </category>
-
-    <category>
-        <pattern>HI *</pattern>
-        <template>
-            <random>
                 <li>Hi! Welcome to the Recipe Chatbot. What type of recipe are you looking for?</li>
                 <li>Hi! This is Recipe Chatbot. How can I help you?</li>
             </random>
@@ -25,41 +12,56 @@
     </category>
 
     <category>
+        <pattern>HELLO *</pattern>
+        <template><srai>HELLO</srai></template>
+    </category>
+
+    <category>
+        <pattern>HI *</pattern>
+        <template><srai>HELLO</srai></template>
+    </category>
+
+    <category>
         <pattern>HI</pattern>
-        <template>Hi! This is Recipe Chatbot. How can I help you?</template>
+        <template><srai>HELLO</srai></template>
+    </category>
+
+    <category>
+        <pattern>GOOD MORNING</pattern>
+        <template><srai>HELLO</srai></template>
+    </category>
+
+    <category>
+        <pattern>GOOD AFTERNOON</pattern>
+        <template><srai>HELLO</srai></template>
+    </category>
+
+    <category>
+        <pattern>GOOD EVENING</pattern>
+        <template><srai>HELLO</srai></template>
     </category>
 
     <category>
         <pattern>WHAT CAN YOU DO</pattern>
-        <template>I can suggest recipes based on ingredients or cuisine.</template>
+        <template>I can share you great recipes.</template>
     </category>
 
     <category>
-        <pattern>RECOMMEND A RECIPE</pattern>
-        <template>Sure! What ingredients do you have?</template>
-    </category>
-
-    <category>
-        <pattern>I HAVE *</pattern>
-        <template>Great! You can make a delicious meal. Would you like a recipe suggestion?</template>
-    </category>
-
-    <category>
-        <pattern>YES</pattern>
-        <template>Okay! Here’s a quick recipe for you: Pasta with Tomato Sauce. Boil pasta, heat sauce, mix and serve!</template>
-    </category>
-
-    <category>
-        <pattern>NO</pattern>
-        <template>No problem! Let me know if you need help with anything else.</template>
-    </category>
-
-    <category>
-        <pattern>THANK YOU</pattern>
+        <pattern>HOW ARE YOU</pattern>
         <template>
             <random>
-                <li>You're welcome! Enjoy your meal!</li>
-                <li>My pleasure! See you again.</li>
+                <li>I am good. Thanks for asking. How are you?</li>
+                <li>I am alright. How can I help you today?</li>
+            </random>
+        </template>
+    </category>
+
+    <category>
+        <pattern>I AM FINE</pattern>
+        <template>
+            <random>
+                <li>That's great. How recipe are you craving for today?</li>
+                <li>Happy to hear that.</li>
             </random>
         </template>
     </category>
@@ -72,5 +74,148 @@
                 <li>My pleasure! See you again.</li>
             </random>
         </template>
+    </category>
+
+    <category>
+        <pattern>THANK *</pattern>
+        <template><srai>THANKS</srai></template>
+    </category>
+
+    <category>
+        <pattern>CHEERS</pattern>
+        <template><srai>THANKS</srai></template>
+    </category>
+
+    <category>
+        <pattern>CHEERS *</pattern>
+        <template><srai>THANKS</srai></template>
+    </category>
+
+    <category>
+        <pattern>BYE</pattern>
+        <template>
+            <random>
+                <li>#0$Bye! Nice sharing recipes with you.</li>
+                <li>#0$Bye! Enjoy your meal!</li>
+                <li>#0$Bye! Have a nice day.</li>
+            </random>
+        </template>
+    </category>
+
+    <category>
+        <pattern>BYE *</pattern>
+        <template><srai>BYE</srai></template>
+    </category>
+
+    <category>
+        <pattern>GOODBYE</pattern>
+        <template><srai>BYE</srai></template>
+    </category>
+
+    <category>
+        <pattern>EXIT</pattern>
+        <template><srai>BYE</srai></template>
+    </category>
+
+    <category>
+        <pattern>STOP</pattern>
+        <template><srai>BYE</srai></template>
+    </category>
+
+<!--Wikipedia-->
+    <category>
+        <pattern>WHAT IS *</pattern>
+        <template>#1$<star index="1"/></template>
+    </category>
+
+    <category>
+        <pattern>WHAT IS A *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHAT IS AN *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHAT IS THE *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHAT ARE *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHO IS *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHO IS A *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHO IS AN *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHO IS THE *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHO ARE *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHERE IS *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHERE IS A *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHERE IS AN *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHERE IS THE *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>WHERE ARE *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>DEFINE *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+    <category>
+        <pattern>EXPLAIN *</pattern>
+        <template><srai>WHAT IS <star/></srai></template>
+    </category>
+
+<!--Logic Input-->
+    <category>
+        <pattern>I KNOW THAT * IS *</pattern>
+        <template>#31$<star index="1"/> is <star index="2"/></template>
+    </category>
+
+    <category>
+        <pattern>CHECK THAT * IS *</pattern>
+        <template>#32$<star index="1"/> is <star index="2"/></template>
     </category>
 </aiml>
