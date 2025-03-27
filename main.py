@@ -5,18 +5,24 @@ import nltk
 import pyttsx3
 import pandas as pd
 import speech_recognition as sr
+import wikipedia
 from googletrans import Translator
 from bs4 import BeautifulSoup
-from nltk import WordNetLemmatizer
+from nltk import WordNetLemmatizer, Expression, ResolutionProver
 from nltk.corpus import wordnet
+from nltk.sem.logic import NegatedExpression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
+import random
+import csv
+import re
 warnings.filterwarnings("ignore")
 
 # Only needs to be run once
-nltk.download('punkt')
-nltk.download('wordnet')
+# nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('averaged_perceptron_tagger')
 
 kern = aiml.Kernel()
 kern.verbose(False)
@@ -86,7 +92,6 @@ def listen():
             print("You took too long to respond. Please try again.")
             return None
 
-
 def find_best_match(user_input):
     input_vectors = vectorizer.transform([user_input])
     cosine_similarity_tfidf = cosine_similarity(input_vectors, q_vectors)
@@ -140,6 +145,52 @@ def get_recipe(ingredient):
     recipe_url = f"https://www.bbcgoodfood.com{endpoint}"
     return f"Here's a recipe for {recipe}. See recipe at:", recipe_url
 
+# LOGIC KB
+read_expr = Expression.fromstring
+
+def load_logic_kb():
+    logic_kb = []
+    df = pd.read_csv("logic_kb.csv", header=None)
+    for _, row in df.iterrows():
+        logic_kb.append(read_expr(row[0]))
+    return logic_kb
+
+# def add_logic_fact(added_fact_expr, logic_kb):
+#     added_fact = read_expr(added_fact_expr)
+#     subject, category = added_fact.argument.args
+#     for fact in logic_kb:
+#         existing_subject, existing_category = fact.argument.args
+#         if str(existing_subject) == str(subject) and str(existing_category) != str(category):
+#             return f"Contradiction already known. Thus, {subject} will not be remembered as {category} but as {existing_category}."
+#         logic_kb.append(added_fact)
+#         with open("logic_kb.csv", 'a') as file:
+#             file.write(f"{added_fact_expr}\n")
+#         return f"OK, I will remember that {subject} is {category}."
+def add_logic_fact(expr_str, logic_kb):
+    expr = read_expr(expr_str)
+    neg_expr = read_expr(f"-{expr}")
+    if ResolutionProver().prove(neg_expr, logic_kb):
+        return "That contradicts what I already know! I won’t remember it."
+    else:
+        with open("logic_kb.csv", 'a') as file:
+            file.write(f"{expr_str}\n")
+        if expr_str.startswith("-"):
+            expr_str = expr_str[1:]
+            return f"OK, I will remember that {expr_str.split('(')[1].split(')')[0]} is not {expr_str.split('(')[0]}."
+        else:
+            return f"OK, I will remember that {expr_str.split('(')[1].split(')')[0]} is {expr_str.split('(')[0]}."
+
+def check_logic_fact(check_fact_expr, logic_kb):
+    check_fact_expr = check_fact_expr.strip().lower()
+    fact = read_expr(check_fact_expr)
+    negated_fact = NegatedExpression(fact)
+    if ResolutionProver().prove(fact, logic_kb):
+        return "It is CORRECT!"
+    elif ResolutionProver().prove(negated_fact, logic_kb):
+        return "It is INCORRECT!"
+    else:
+        return "Sorry, I don't know."
+
 output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice(English Only))? "
 print(output)
 while True:
@@ -173,7 +224,6 @@ while True:
         if mode == "1":
             user_input = input("You: ")
             translated_input = translate(user_input, "en")
-            print(translated_input, "\n")
             if translated_input.lower() == "exit" or translated_input.lower() == "stop":
                 output = "Goodbye! Have fun cooking."
                 translated_output = translate(output, language_code)
@@ -222,12 +272,46 @@ while True:
                 continue
             response = kern.respond(translated_input.upper())
             recipe_url = ""
-            if not response or response.startswith("WARNING"):
-                response = find_best_match(translated_input)
-            if not response:
-                response, recipe_url = get_recipe(translated_input)
+            if response.startswith("#"):
+                cmd, value = response[1:].split("$", 1)
+                if cmd == "0":
+                    response = value
+                    translated_response = translate(response, language_code)
+                    print(translated_response, "\n")
+                    break
+                elif cmd == "1":
+                    try:
+                        response = wikipedia.summary(value, sentences=2, auto_suggest=False)
+                    except:
+                        response = "Sorry, can you please be more specific?"
+                elif cmd == "31":
+                    subject, category = map(str.strip, value.split(" is "))
+                    subject = subject.lower()
+                    category = category.lower()
+                    if "not " in category:
+                        logic_expr = f"-{category[4:]}({subject})"
+                    else:
+                        logic_expr = f"{category}({subject})"
+                    print(logic_expr)
+                    response = add_logic_fact(logic_expr, load_logic_kb())
+                elif cmd == "32":
+                    subject, category = map(str.strip, value.split(" is "))
+                    subject = subject.lower()
+                    category = category.lower()
+                    if "not " in category:
+                        logic_expr = f"-{category[4:]}({subject})"
+                    else:
+                        logic_expr = f"{category}({subject})"
+                    response = check_logic_fact(logic_expr, load_logic_kb())
+            else:
+                if not response or response.startswith("WARNING"):
+                    response = find_best_match(translated_input)
+                if not response:
+                    response, recipe_url = get_recipe(translated_input)
             translated_response = translate(response, language_code)
             print(translated_response, recipe_url, "\n")
+
+
 
         elif mode == "2":
             user_input = listen()
@@ -254,10 +338,40 @@ while True:
                 continue
             response = kern.respond(user_input.upper())
             recipe_url = ""
-            if not response or response.startswith("WARNING"):
-                response = find_best_match(user_input)
-            if not response:
-                response, recipe_url = get_recipe(user_input)
+            if response.startswith("#"):
+                cmd, value = response[1:].split("$", 1)
+                if cmd == "0":
+                    response = value
+                    print(response, "\n")
+                    break
+                elif cmd == "1":
+                    try:
+                        response = wikipedia.summary(value, sentences=2, auto_suggest=False)
+                    except:
+                        response = "Sorry, can you please be more specific?"
+                elif cmd == "31":
+                    subject, category = map(str.strip, value.split(" is "))
+                    subject = subject.lower()
+                    category = category.lower()
+                    if "not " in category:
+                        logic_expr = f"-{category[4:]}({subject})"
+                    else:
+                        logic_expr = f"{category}({subject})"
+                    response = add_logic_fact(logic_expr, load_logic_kb())
+                elif cmd == "32":
+                    subject, category = map(str.strip, value.split(" is "))
+                    subject = subject.lower()
+                    category = category.lower()
+                    if "not " in category:
+                        logic_expr = f"-{category[4:]}({subject})"
+                    else:
+                        logic_expr = f"{category}({subject})"
+                    response = check_logic_fact(logic_expr, load_logic_kb())
+            else:
+                if not response or response.startswith("WARNING"):
+                    response = find_best_match(user_input)
+                if not response:
+                    response, recipe_url = get_recipe(user_input)
             print(response, recipe_url, "\n")
             text_to_speech(response)
 
