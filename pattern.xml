@@ -218,4 +218,29 @@
         <pattern>CHECK THAT * IS *</pattern>
         <template>#32$<star index="1"/> is <star index="2"/></template>
     </category>
+
+    <category>
+        <pattern>LET'S PLAY A GAME</pattern>
+        <template>#33$</template>
+    </category>
+
+    <category>
+        <pattern>CAN WE PLAY A GAME</pattern>
+        <template>#33$</template>
+    </category>
+
+    <category>
+        <pattern>SHALL WE PLAY A GAME</pattern>
+        <template>#33$</template>
+    </category>
+
+    <category>
+        <pattern>* GAME</pattern>
+        <template>#33$</template>
+    </category>
+
+    <category>
+        <pattern>* GAME *</pattern>
+        <template>#33$</template>
+    </category>
 </aiml>

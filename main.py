@@ -155,17 +155,6 @@ def load_logic_kb():
         logic_kb.append(read_expr(row[0]))
     return logic_kb
 
-# def add_logic_fact(added_fact_expr, logic_kb):
-#     added_fact = read_expr(added_fact_expr)
-#     subject, category = added_fact.argument.args
-#     for fact in logic_kb:
-#         existing_subject, existing_category = fact.argument.args
-#         if str(existing_subject) == str(subject) and str(existing_category) != str(category):
-#             return f"Contradiction already known. Thus, {subject} will not be remembered as {category} but as {existing_category}."
-#         logic_kb.append(added_fact)
-#         with open("logic_kb.csv", 'a') as file:
-#             file.write(f"{added_fact_expr}\n")
-#         return f"OK, I will remember that {subject} is {category}."
 def add_logic_fact(expr_str, logic_kb):
     expr = read_expr(expr_str)
     neg_expr = read_expr(f"-{expr}")
@@ -190,6 +179,37 @@ def check_logic_fact(check_fact_expr, logic_kb):
         return "It is INCORRECT!"
     else:
         return "Sorry, I don't know."
+
+# LOGICAL GAME
+game_kb = "game_kb.csv"
+def get_random():
+    with open(game_kb, newline="") as file:
+        return random.choice(list(csv.reader(file)))
+
+def guess_game():
+    entry = get_random()
+    hidden, traits = entry[0], entry[1:]
+    print("Guess the food! You have 5 lives.")
+    lives = 5
+    while lives > 0:
+        print("Enter 'guess' to guess the food or trait of the food to check.")
+        user_input = input("You: ").strip().lower()
+        if user_input == "guess":
+            user_guess = input("Your guess:").strip().lower()
+            if user_guess == hidden:
+                print(f"Congradulations! You are correct. The food was {hidden}.")
+                return
+            else:
+                lives -= 1
+                print(f"Wrong guess! You have {lives} lives.")
+        elif user_input in map(str.lower, traits):
+            print("That's a trait of the food. Getting close.")
+            return
+        else:
+            lives -= 1
+            print("Oops! It is not a trait of the food.")
+        print(f"You have {lives} lives.")
+    print(f"Game Over. The food was {hidden}.")
 
 output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice(English Only))? "
 print(output)
@@ -303,6 +323,9 @@ while True:
                     else:
                         logic_expr = f"{category}({subject})"
                     response = check_logic_fact(logic_expr, load_logic_kb())
+                elif cmd == "33":
+                    guess_game()
+                    response = ""
             else:
                 if not response or response.startswith("WARNING"):
                     response = find_best_match(translated_input)
