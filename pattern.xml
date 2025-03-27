@@ -220,17 +220,12 @@
     </category>
 
     <category>
-        <pattern>LET'S PLAY A GAME</pattern>
+        <pattern>* GAMES</pattern>
         <template>#33$</template>
     </category>
 
     <category>
-        <pattern>CAN WE PLAY A GAME</pattern>
-        <template>#33$</template>
-    </category>
-
-    <category>
-        <pattern>SHALL WE PLAY A GAME</pattern>
+        <pattern>* GAMES *</pattern>
         <template>#33$</template>
     </category>
 

@@ -16,7 +16,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import warnings
 import random
 import csv
-import re
 warnings.filterwarnings("ignore")
 
 # Only needs to be run once
@@ -186,30 +185,47 @@ def get_random():
     with open(game_kb, newline="") as file:
         return random.choice(list(csv.reader(file)))
 
-def guess_game():
+def guess_game(language_code):
     entry = get_random()
     hidden, traits = entry[0], entry[1:]
-    print("Guess the food! You have 5 lives.")
+    output = "Guess the food! You have 5 lives."
+    translated_output = translate(output, language_code)
+    print(translated_output)
     lives = 5
     while lives > 0:
-        print("Enter 'guess' to guess the food or trait of the food to check.")
-        user_input = input("You: ").strip().lower()
-        if user_input == "guess":
-            user_guess = input("Your guess:").strip().lower()
-            if user_guess == hidden:
-                print(f"Congradulations! You are correct. The food was {hidden}.")
+        output = "Enter 'guess' to guess the food or trait of the food to check."
+        translated_output = translate(output, language_code)
+        print(translated_output)
+        user_input = input("You: ").strip()
+        translated_input = translate(user_input, "en").lower()
+        if translated_input == "guess":
+            user_guess = input("Your guess:").strip()
+            translated_guess = translate(user_guess, "en").lower()
+            if translated_guess == hidden:
+                output = f"Congradulations! You are correct. The food was {hidden}."
+                translated_output = translate(output, language_code)
+                print(translated_output)
                 return
             else:
                 lives -= 1
-                print(f"Wrong guess! You have {lives} lives.")
-        elif user_input in map(str.lower, traits):
-            print("That's a trait of the food. Getting close.")
-            return
+                output = f"Wrong guess!"
+                translated_output = translate(output, language_code)
+                print(translated_output)
+        elif translated_input in map(str.lower, traits):
+            output = "That's a trait of the food. Getting close."
+            translated_output = translate(output, language_code)
+            print(translated_output)
         else:
             lives -= 1
-            print("Oops! It is not a trait of the food.")
-        print(f"You have {lives} lives.")
-    print(f"Game Over. The food was {hidden}.")
+            output = "Oops! It is not a trait of the food."
+            translated_output = translate(output, language_code)
+            print(translated_output)
+        output = f"You have {lives} lives."
+        translated_output = translate(output, language_code)
+        print(translated_output, "\n")
+    output = f"Game Over. The food was {hidden}."
+    translated_output = translate(output, language_code)
+    print(translated_output)
 
 output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice(English Only))? "
 print(output)
@@ -324,7 +340,7 @@ while True:
                         logic_expr = f"{category}({subject})"
                     response = check_logic_fact(logic_expr, load_logic_kb())
                 elif cmd == "33":
-                    guess_game()
+                    guess_game(language_code)
                     response = ""
             else:
                 if not response or response.startswith("WARNING"):
@@ -333,7 +349,6 @@ while True:
                     response, recipe_url = get_recipe(translated_input)
             translated_response = translate(response, language_code)
             print(translated_response, recipe_url, "\n")
-
 
 
         elif mode == "2":
@@ -390,6 +405,9 @@ while True:
                     else:
                         logic_expr = f"{category}({subject})"
                     response = check_logic_fact(logic_expr, load_logic_kb())
+                elif cmd == "33":
+                    guess_game("en")
+                    response = ""
             else:
                 if not response or response.startswith("WARNING"):
                     response = find_best_match(user_input)
