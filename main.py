@@ -2,8 +2,9 @@ import asyncio
 import requests
 import aiml
 import nltk
-import pandas as pd
 import wikipedia
+import pandas as pd
+import numpy as np
 from googletrans import Translator
 from bs4 import BeautifulSoup
 from nltk import WordNetLemmatizer, Expression, ResolutionProver
@@ -11,15 +12,23 @@ from nltk.corpus import wordnet
 from nltk.sem.logic import NegatedExpression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from tensorflow.keras.models import load_model
+from tensorflow.keras.preprocessing import image
 import warnings
 import random
 import csv
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image
+from tensorflow.keras.applications.efficientnet import preprocess_input
+
 warnings.filterwarnings("ignore")
 
-# Only needs to be run once
-# nltk.download('punkt')
-# nltk.download('wordnet')
-# nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
+
+model = load_model("eff_model.keras")
 
 kern = aiml.Kernel()
 kern.verbose(False)
@@ -198,6 +207,35 @@ def guess_game(language_code):
     translated_output = translate(output, language_code)
     print(translated_output)
 
+# IMAGE CLASSIFICATION
+class_labels = {
+    0: "bibimbap",
+    1: "fried rice",
+    2: "grilled cheese sandwich",
+    3: "hamburger",
+    4: "pad thai",
+    5: "pancakes",
+    6: "pizza",
+    7: "spring rolls",
+    8: "steak",
+    9: "sushi"
+}
+
+def classify_food(img_path):
+    try:
+        img = image.load_img(img_path, target_size=(224, 224))
+        img_array = image.img_to_array(img)
+        img_array = preprocess_input(img_array)
+        img_array = np.expand_dims(img_array, axis=0)
+        classifications = model.predict(img_array)
+        class_index = np.argmax(classifications[0])
+        label = class_labels[class_index]
+        confidence = classifications[0][class_index] * 100
+        return f"I think this is {label} (confidence: {confidence:.2f}%)"
+    except Exception as e:
+        return f"Error loading image: {str(e)}"
+
+
 print("Hello! I am May's recipe chatbot. Please type 'change language' to change the language of the chatbot.")
 print("Choose chatbot language: English, Myanmar, French, Spanish, Chinese.")
 while True:
@@ -277,6 +315,25 @@ while True:
             elif cmd == "33":
                 guess_game(language_code)
                 response = ""
+            elif cmd == "34":
+                # code referenced form https://en.ittrip.xyz/python/python-file-dialog (IT trip, 2024)
+                root = tk.Tk()
+                root.withdraw()
+                image_path = filedialog.askopenfilename(
+                    title = "Select an image for classification",
+                    filetypes = (("Image files", "*.jpg *.jpeg *.png"), ("All files", "*.*"))
+                )
+
+                if image_path:
+                    img = Image.open(image_path)
+                    img.show()
+
+                    try:
+                        response = classify_food(image_path)
+                    except Exception as e:
+                        response = "Sorry, I could not identify this image."
+                else:
+                    output = "No image selected."
         else:
             if not response or response.startswith("WARNING"):
                 response = find_best_match(translated_input)

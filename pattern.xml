@@ -238,4 +238,25 @@
         <pattern>* GAME *</pattern>
         <template>#33$</template>
     </category>
+
+<!--IMAGE CLASSIFICATION-->
+    <category>
+        <pattern>* IMAGE</pattern>
+        <template>#34$</template>
+    </category>
+
+    <category>
+        <pattern>* IMAGE *</pattern>
+        <template>#34$</template>
+    </category>
+
+    <category>
+        <pattern>* IMAGES</pattern>
+        <template>#34$</template>
+    </category>
+
+    <category>
+        <pattern>* IMAGES *</pattern>
+        <template>#34$</template>
+    </category>
 </aiml>
