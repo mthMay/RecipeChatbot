@@ -2,9 +2,7 @@ import asyncio
 import requests
 import aiml
 import nltk
-import pyttsx3
 import pandas as pd
-import speech_recognition as sr
 import wikipedia
 from googletrans import Translator
 from bs4 import BeautifulSoup
@@ -61,35 +59,6 @@ qa = pd.read_csv("q&a.csv", header=None, names=["question", "answer"])
 
 vectorizer = TfidfVectorizer(tokenizer=custom_tokenizer)
 q_vectors = vectorizer.fit_transform(qa["question"])
-
-# code referenced from https://www.geeksforgeeks.org/convert-text-speech-python/ (GeeksforGeeks, 2024)
-engine = pyttsx3.init()
- # engine.setProperty("rate", 140)
-
-def text_to_speech(text):
-    engine.say(text)
-    engine.runAndWait()
-
-# code referenced from https://www.geeksforgeeks.org/python-speech-recognition-module/ (GeeksforGeeks, 2024)
-recognizer = sr.Recognizer()
-def listen():
-    with sr.Microphone() as source:
-        print("Listening...")
-        recognizer.adjust_for_ambient_noise(source, duration=1)
-        try:
-            audio = recognizer.listen(source, timeout=5)
-            user_input = recognizer.recognize_google(audio).lower()
-            print("You (Voice):", user_input)
-            return user_input.lower()
-        except sr.UnknownValueError:
-            print("I did not catch that. Can you repeat?")
-            return None
-        except sr.RequestError:
-            print("Speech recognition service is unavailable. Please try again.")
-            return None
-        except sr.WaitTimeoutError:
-            print("You took too long to respond. Please try again.")
-            return None
 
 def find_best_match(user_input):
     input_vectors = vectorizer.transform([user_input])
@@ -157,6 +126,8 @@ def load_logic_kb():
 def add_logic_fact(expr_str, logic_kb):
     expr = read_expr(expr_str)
     neg_expr = read_expr(f"-{expr}")
+    if expr in logic_kb:
+        return "Right! I know that as well."
     if ResolutionProver().prove(neg_expr, logic_kb):
         return "That contradicts what I already know! I won’t remember it."
     else:
@@ -202,7 +173,7 @@ def guess_game(language_code):
             user_guess = input("Your guess:").strip()
             translated_guess = translate(user_guess, "en").lower()
             if translated_guess == hidden:
-                output = f"Congradulations! You are correct. The food was {hidden}."
+                output = f"Congratulations! You are correct. The food was {hidden}."
                 translated_output = translate(output, language_code)
                 print(translated_output)
                 return
@@ -227,196 +198,93 @@ def guess_game(language_code):
     translated_output = translate(output, language_code)
     print(translated_output)
 
-output = "Hello! I am recipe chatbot. Would you like to use (1) Text or (2) Voice(English Only))? "
-print(output)
+print("Hello! I am May's recipe chatbot. Please type 'change language' to change the language of the chatbot.")
+print("Choose chatbot language: English, Myanmar, French, Spanish, Chinese.")
 while True:
-    mode = input("Enter choice (1 or 2): ").strip()
-    if mode == "1":
-        output = "You have chosen text mode. Please type 'change mode' to change chatbot mode or 'change language' to change output language."
-        print(output)
-        print("Choose a output language: English, Myanmar, French, Spanish, Chinese.")
-        while True:
-            chosen_language = input("Choose a language: ").strip().lower()
-            if chosen_language in languages:
-                language_code = languages[chosen_language]
-                output = f"You have chosen {chosen_language} language"
-                translated_output = translate(output, language_code)
-                print(translated_output, "\n")
-                break
-            else:
-                language_code = "en"
-                print("Language is set to English by default.\n")
-                break
-        break
-    elif mode == "2":
-        print("You have chosen voice mode. Please say change voice to change chatbot mode.\n")
-        text_to_speech("You have chosen voice mode. Please say change voice to change chatbot mode.")
+    chosen_language = input("Choose a language: ").strip().lower()
+    if chosen_language in languages:
+        language_code = languages[chosen_language]
+        output = f"You have chosen {chosen_language} language"
+        translated_output = translate(output, language_code)
+        print(translated_output, "\n")
         break
     else:
-        print("Invalid choice. Please enter 1 for Text or 2 for Voice.\n")
+        language_code = "en"
+        print("Language is set to English by default.\n")
+        break
 
 while True:
     try:
-        if mode == "1":
-            user_input = input("You: ")
-            translated_input = translate(user_input, "en")
-            if translated_input.lower() == "exit" or translated_input.lower() == "stop":
-                output = "Goodbye! Have fun cooking."
+        user_input = input("You: ")
+        translated_input = translate(user_input, "en")
+        if translated_input.lower() == "exit" or translated_input.lower() == "stop":
+            output = "Goodbye! Have fun cooking."
+            translated_output = translate(output, language_code)
+            print(translated_output, "\n")
+            break
+        if translated_input.lower() == "change language":
+            output = "Choose chatbot language: English, Myanmar, French, Spanish, Chinese."
+            translated_output = translate(output, language_code)
+            print(translated_output, "\n")
+            while True:
+                output = "Choose a language"
                 translated_output = translate(output, language_code)
-                print(translated_output, "\n")
-                break
-            if translated_input.lower() == "change mode":
-                output = "Switching input mode. Would you like (1) Text or (2) Voice(English Only)?"
-                translated_output = translate(output, language_code)
-                print(translated_output, "\n")
-                while True:
-                    output = "Enter choice (1 or 2)"
+                chosen_language = input(f"{translated_output}: ").strip().lower()
+                translated_chosen_language = translate(chosen_language, "en").lower()
+                if translated_chosen_language in languages:
+                    language_code = languages[translated_chosen_language]
+                    output = f"You have chosen {translated_chosen_language} language"
                     translated_output = translate(output, language_code)
-                    mode = input(f"{translated_output}: ").strip()
-                    translated_mode = translate(mode, "en").lower()
-                    if translated_mode == "1":
-                        output = "You have chosen text mode. Please type 'change mode' to change chatbot mode."
-                        translated_output = translate(output, language_code)
-                        print(translated_output, "\n")
-                        break
-                    elif translated_mode == "2":
-                        print("You have chosen voice mode. Please say change voice to change chatbot mode.\n")
-                        text_to_speech("You have chosen voice mode. Please say change voice to change chatbot mode.")
-                        break
-                    else:
-                        print("Invalid choice. Please enter 1 for Text or 2 for Voice.\n")
-                continue
-            if translated_input.lower() == "change language":
-                output = "Choose a output language: English, Myanmar, French, Spanish, Chinese."
-                translated_output = translate(output, language_code)
-                print(translated_output, "\n")
-                while True:
-                    output = "Choose a language"
-                    translated_output = translate(output, language_code)
-                    chosen_language = input(f"{translated_output}: ").strip().lower()
-                    translated_chosen_language = translate(chosen_language, "en").lower()
-                    if translated_chosen_language in languages:
-                        language_code = languages[translated_chosen_language]
-                        output = f"You have chosen {translated_chosen_language} language"
-                        translated_output = translate(output, language_code)
-                        print(translated_output, "\n")
-                        break
-                    else:
-                        language_code = "en"
-                        print("Language is set to English by default.\n")
-                        break
-                continue
-            response = kern.respond(translated_input.upper())
-            recipe_url = ""
-            if response.startswith("#"):
-                cmd, value = response[1:].split("$", 1)
-                if cmd == "0":
-                    response = value
-                    translated_response = translate(response, language_code)
-                    print(translated_response, "\n")
+                    print(translated_output, "\n")
                     break
-                elif cmd == "1":
-                    try:
-                        response = wikipedia.summary(value, sentences=2, auto_suggest=False)
-                    except:
-                        response = "Sorry, can you please be more specific?"
-                elif cmd == "31":
-                    subject, category = map(str.strip, value.split(" is "))
-                    subject = subject.lower()
-                    category = category.lower()
-                    if "not " in category:
-                        logic_expr = f"-{category[4:]}({subject})"
-                    else:
-                        logic_expr = f"{category}({subject})"
-                    print(logic_expr)
-                    response = add_logic_fact(logic_expr, load_logic_kb())
-                elif cmd == "32":
-                    subject, category = map(str.strip, value.split(" is "))
-                    subject = subject.lower()
-                    category = category.lower()
-                    if "not " in category:
-                        logic_expr = f"-{category[4:]}({subject})"
-                    else:
-                        logic_expr = f"{category}({subject})"
-                    response = check_logic_fact(logic_expr, load_logic_kb())
-                elif cmd == "33":
-                    guess_game(language_code)
-                    response = ""
-            else:
-                if not response or response.startswith("WARNING"):
-                    response = find_best_match(translated_input)
-                if not response:
-                    response, recipe_url = get_recipe(translated_input)
-            translated_response = translate(response, language_code)
-            print(translated_response, recipe_url, "\n")
-
-
-        elif mode == "2":
-            user_input = listen()
-            if user_input.lower() == "exit" or user_input.lower() == "stop":
-                output = "Goodbye! Have fun cooking."
-                print(output)
-                text_to_speech(output)
+                else:
+                    language_code = "en"
+                    print("Language is set to English by default.\n")
+                    break
+            continue
+        response = kern.respond(translated_input.upper())
+        recipe_url = ""
+        if response.startswith("#"):
+            cmd, value = response[1:].split("$", 1)
+            if cmd == "0":
+                response = value
+                translated_response = translate(response, language_code)
+                print(translated_response, "\n")
                 break
-            if user_input.lower() == "change mode":
-                print("Switching input mode. Would you like (1) Text or (2) Voice?")
-                text_to_speech("Switching input mode. Would you like text or voice? Please enter one for text or two for voice.")
-                while True:
-                    mode = input("Enter choice (1 or 2): ").strip()
-                    if mode == "1":
-                        print("You have chosen text mode. Please type 'change mode' to change chatbot mode.\n")
-                        break
-                    elif mode == "2":
-                        print("You have chosen voice mode. Please say change voice to change chatbot mode.\n")
-                        text_to_speech("You have chosen voice mode. Please say change voice to change chatbot mode.")
-                        break
-                    else:
-                        print("Invalid choice. Please enter 1 for Text or 2 for Voice.\n")
-
-                continue
-            response = kern.respond(user_input.upper())
-            recipe_url = ""
-            if response.startswith("#"):
-                cmd, value = response[1:].split("$", 1)
-                if cmd == "0":
-                    response = value
-                    print(response, "\n")
-                    break
-                elif cmd == "1":
-                    try:
-                        response = wikipedia.summary(value, sentences=2, auto_suggest=False)
-                    except:
-                        response = "Sorry, can you please be more specific?"
-                elif cmd == "31":
-                    subject, category = map(str.strip, value.split(" is "))
-                    subject = subject.lower()
-                    category = category.lower()
-                    if "not " in category:
-                        logic_expr = f"-{category[4:]}({subject})"
-                    else:
-                        logic_expr = f"{category}({subject})"
-                    response = add_logic_fact(logic_expr, load_logic_kb())
-                elif cmd == "32":
-                    subject, category = map(str.strip, value.split(" is "))
-                    subject = subject.lower()
-                    category = category.lower()
-                    if "not " in category:
-                        logic_expr = f"-{category[4:]}({subject})"
-                    else:
-                        logic_expr = f"{category}({subject})"
-                    response = check_logic_fact(logic_expr, load_logic_kb())
-                elif cmd == "33":
-                    guess_game("en")
-                    response = ""
-            else:
-                if not response or response.startswith("WARNING"):
-                    response = find_best_match(user_input)
-                if not response:
-                    response, recipe_url = get_recipe(user_input)
-            print(response, recipe_url, "\n")
-            text_to_speech(response)
+            elif cmd == "1":
+                try:
+                    response = wikipedia.summary(value, sentences=2, auto_suggest=False)
+                except:
+                    response = "Sorry, can you please be more specific?"
+            elif cmd == "31":
+                subject, category = map(str.strip, value.split(" is "))
+                subject = subject.lower().replace("the ", "").strip()
+                category = category.lower()
+                if "not " in category:
+                    logic_expr = f"-{category[4:]}({subject})"
+                else:
+                    logic_expr = f"{category}({subject})"
+                response = add_logic_fact(logic_expr, load_logic_kb())
+            elif cmd == "32":
+                subject, category = map(str.strip, value.split(" is "))
+                subject = subject.lower().replace("the ", "").strip()
+                category = category.lower()
+                if "not " in category:
+                    logic_expr = f"-{category[4:]}({subject})"
+                else:
+                    logic_expr = f"{category}({subject})"
+                response = check_logic_fact(logic_expr, load_logic_kb())
+            elif cmd == "33":
+                guess_game(language_code)
+                response = ""
+        else:
+            if not response or response.startswith("WARNING"):
+                response = find_best_match(translated_input)
+            if not response:
+                response, recipe_url = get_recipe(translated_input)
+        translated_response = translate(response, language_code)
+        print(translated_response, recipe_url, "\n")
 
     except(KeyboardInterrupt, EOFError):
         print("Goodbye! Have fun cooking.")
-        #text_to_speech("Goodbye! Have fun cooking.")
         break
