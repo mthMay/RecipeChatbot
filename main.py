@@ -2,7 +2,6 @@ import asyncio
 import requests
 import aiml
 import nltk
-import wikipedia
 import pandas as pd
 import numpy as np
 from googletrans import Translator
@@ -344,11 +343,6 @@ while True:
                 translated_response = translate(response, language_code)
                 print(translated_response, "\n")
                 break
-            elif cmd == "1":
-                try:
-                    response = wikipedia.summary(value, sentences=2, auto_suggest=False)
-                except:
-                    response = "Sorry, can you please be more specific?"
             elif cmd == "31":
                 subject, category = map(str.strip, value.split(" is "))
                 subject = subject.lower().replace("the ", "").strip()

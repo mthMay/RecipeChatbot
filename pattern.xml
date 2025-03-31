@@ -122,92 +122,6 @@
         <template><srai>BYE</srai></template>
     </category>
 
-<!--Wikipedia-->
-    <category>
-        <pattern>WHAT IS *</pattern>
-        <template>#1$<star index="1"/></template>
-    </category>
-
-    <category>
-        <pattern>WHAT IS A *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHAT IS AN *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHAT IS THE *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHAT ARE *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHO IS *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHO IS A *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHO IS AN *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHO IS THE *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHO ARE *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHERE IS *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHERE IS A *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHERE IS AN *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHERE IS THE *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>WHERE ARE *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>DEFINE *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
-    <category>
-        <pattern>EXPLAIN *</pattern>
-        <template><srai>WHAT IS <star/></srai></template>
-    </category>
-
 <!--Logic Input-->
     <category>
         <pattern>I KNOW THAT * IS *</pattern>
@@ -252,6 +166,26 @@
 
     <category>
         <pattern>* GOOD FOR *</pattern>
+        <template>#35$</template>
+    </category>
+
+    <category>
+        <pattern>* BALANCE *</pattern>
+        <template>#35$</template>
+    </category>
+
+    <category>
+        <pattern>* BALANCE</pattern>
+        <template>#35$</template>
+    </category>
+
+    <category>
+        <pattern>* BALANCED *</pattern>
+        <template>#35$</template>
+    </category>
+
+    <category>
+        <pattern>* BALANCED</pattern>
         <template>#35$</template>
     </category>
 
