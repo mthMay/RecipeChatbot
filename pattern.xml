@@ -239,6 +239,22 @@
         <template>#33$</template>
     </category>
 
+<!--FUZZY-->
+    <category>
+        <pattern>* IS IT GOOD FOR ME *</pattern>
+        <template>#35$</template>
+    </category>
+
+    <category>
+        <pattern>* GOOD FOR ME *</pattern>
+        <template>#35$</template>
+    </category>
+
+    <category>
+        <pattern>* GOOD FOR *</pattern>
+        <template>#35$</template>
+    </category>
+
 <!--IMAGE CLASSIFICATION-->
     <category>
         <pattern>* IMAGE</pattern>

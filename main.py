@@ -20,13 +20,14 @@ import csv
 import tkinter as tk
 from tkinter import filedialog
 from PIL import Image
+from simpful import *
 from tensorflow.keras.applications.efficientnet import preprocess_input
 
 warnings.filterwarnings("ignore")
 
-nltk.download('punkt')
-nltk.download('wordnet')
-nltk.download('averaged_perceptron_tagger')
+# nltk.download('punkt')
+# nltk.download('wordnet')
+# nltk.download('averaged_perceptron_tagger')
 
 model = load_model("eff_model.keras")
 
@@ -159,7 +160,7 @@ def check_logic_fact(check_fact_expr, logic_kb):
     else:
         return "Sorry, I don't know."
 
-# LOGICAL GAME
+# GAME
 game_kb = "game_kb.csv"
 def get_random():
     with open(game_kb, newline="") as file:
@@ -206,6 +207,43 @@ def guess_game(language_code):
     output = f"Game Over. The food was {hidden}."
     translated_output = translate(output, language_code)
     print(translated_output)
+
+# FUZZY LOGIC
+FS = FuzzySystem()
+
+FS.add_linguistic_variable("Spiciness", LinguisticVariable([
+    FuzzySet(function=Trapezoidal_MF(a=0, b=2, c=4), term="low"),
+    FuzzySet(function=Triangular_MF(a=3, b=4, c=7), term="medium"),
+    FuzzySet(function=Trapezoidal_MF(a=6, b=8, c=10), term="high")
+], universe_of_discourse=[0,10]))
+
+FS.add_linguistic_variable("Healthiness", LinguisticVariable([
+    FuzzySet(function=Trapezoidal_MF(a=0, b=2, c=4), term="low"),
+    FuzzySet(function=Triangular_MF(a=3, b=5, c=7), term="medium"),
+    FuzzySet(function=Trapezoidal_MF(a=6, b=8, c=10), term="high")
+], universe_of_discourse=[0,10]))
+
+FS.set_crisp_output_value("low", 0)
+FS.set_crisp_output_value("medium", 10)
+FS.set_crisp_output_value("high", 20)
+
+FS.add_rules([
+    "IF (Spiciness IS low) AND (Healthiness IS high) THEN (Recommendation IS high)",
+    "IF (Spiciness IS medium) AND (Healthiness IS medium) THEN (Recommendation IS medium)",
+    "IF (Spiciness IS high) AND (Healthiness IS low) THEN (Recommendation IS low)"
+])
+
+def get_recommendation(spice_score, health_score):
+    FS.set_variable("Spiciness", spice_score)
+    FS.set_variable("Healthiness", health_score)
+    result = FS.Sugeno_inference(["Recommendation"])
+    level = float(result["Recommendation"])
+    if level >= 15:
+        return "Highly recommended for you! It is considered healthy."
+    elif level >= 7:
+        return "Moderately recommended. It is not bad for your health."
+    else:
+        return "Not recommended. It is not good for your stomach."
 
 # IMAGE CLASSIFICATION
 class_labels = {
@@ -334,6 +372,15 @@ while True:
                         response = "Sorry, I could not identify this image."
                 else:
                     output = "No image selected."
+            elif cmd == "35":
+                output = "On a scale of 0–10, how spicy is the food? "
+                translated_output = translate(output, language_code)
+                spice = float(input(translated_output))
+                output = "On a scale of 0–10, how healthy is the food? "
+                translated_output = translate(output, language_code)
+                health = float(input(translated_output))
+                response = get_recommendation(spice, health)
+
         else:
             if not response or response.startswith("WARNING"):
                 response = find_best_match(translated_input)
