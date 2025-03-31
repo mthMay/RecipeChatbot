@@ -211,16 +211,28 @@ def guess_game(language_code):
 # FUZZY LOGIC
 FS = FuzzySystem()
 
-FS.add_linguistic_variable("Spiciness", LinguisticVariable([
-    FuzzySet(function=Trapezoidal_MF(a=0, b=2, c=4), term="low"),
-    FuzzySet(function=Triangular_MF(a=3, b=4, c=7), term="medium"),
-    FuzzySet(function=Trapezoidal_MF(a=6, b=8, c=10), term="high")
+FS.add_linguistic_variable("Protein", LinguisticVariable([
+    FuzzySet(function=Trapezoidal_MF(0,  2, 4), term="low"),
+    FuzzySet(function=Triangular_MF(3, 5, 7), term="medium"),
+    FuzzySet(function=Trapezoidal_MF(6, 8, 10), term="high")
 ], universe_of_discourse=[0,10]))
 
-FS.add_linguistic_variable("Healthiness", LinguisticVariable([
-    FuzzySet(function=Trapezoidal_MF(a=0, b=2, c=4), term="low"),
-    FuzzySet(function=Triangular_MF(a=3, b=5, c=7), term="medium"),
-    FuzzySet(function=Trapezoidal_MF(a=6, b=8, c=10), term="high")
+FS.add_linguistic_variable("Vegetables", LinguisticVariable([
+    FuzzySet(function=Trapezoidal_MF(0,  2, 4), term="low"),
+    FuzzySet(function=Triangular_MF(3, 5, 7), term="medium"),
+    FuzzySet(function=Trapezoidal_MF(6, 8, 10), term="high")
+], universe_of_discourse=[0,10]))
+
+FS.add_linguistic_variable("Carbs", LinguisticVariable([
+    FuzzySet(function=Trapezoidal_MF(0, 2, 4), term="low"),
+    FuzzySet(function=Triangular_MF(3, 5, 7), term="medium"),
+    FuzzySet(function=Trapezoidal_MF(6, 8, 10), term="high")
+], universe_of_discourse=[0,10]))
+
+FS.add_linguistic_variable("Fruits", LinguisticVariable([
+    FuzzySet(function=Trapezoidal_MF(0,1, 3), term="low"),
+    FuzzySet(function=Triangular_MF(2, 4, 6), term="medium"),
+    FuzzySet(function=Trapezoidal_MF(5, 7, 10), term="high")
 ], universe_of_discourse=[0,10]))
 
 FS.set_crisp_output_value("low", 0)
@@ -228,22 +240,27 @@ FS.set_crisp_output_value("medium", 10)
 FS.set_crisp_output_value("high", 20)
 
 FS.add_rules([
-    "IF (Spiciness IS low) AND (Healthiness IS high) THEN (Recommendation IS high)",
-    "IF (Spiciness IS medium) AND (Healthiness IS medium) THEN (Recommendation IS medium)",
-    "IF (Spiciness IS high) AND (Healthiness IS low) THEN (Recommendation IS low)"
+    "IF (Protein IS high) AND (Vegetables IS high) AND (Carbs IS medium) AND (Fruits IS medium) THEN (Balance IS high)",
+    "IF (Protein IS medium) AND (Vegetables IS medium) AND (Carbs IS medium) AND (Fruits IS low) THEN (Balance IS medium)",
+    "IF (Protein IS low) AND (Vegetables IS low) THEN (Balance IS low)",
+    "IF (Carbs IS high) AND (Protein IS low) THEN (Balance IS low)",
+    "IF (Vegetables IS high) AND (Fruits IS high) AND (Protein IS medium) THEN (Balance IS high)",
+    "IF (Carbs IS low) AND (Protein IS high) THEN (Balance IS medium)"
 ])
 
-def get_recommendation(spice_score, health_score):
-    FS.set_variable("Spiciness", spice_score)
-    FS.set_variable("Healthiness", health_score)
-    result = FS.Sugeno_inference(["Recommendation"])
-    level = float(result["Recommendation"])
+def get_recommendation(protein, vegetables, carbs, fruits):
+    FS.set_variable("Protein", protein)
+    FS.set_variable("Vegetables", vegetables)
+    FS.set_variable("Carbs", carbs)
+    FS.set_variable("Fruits", fruits)
+    result = FS.Sugeno_inference(["Balance"])
+    level = float(result["Balance"])
     if level >= 15:
-        return "Highly recommended for you! It is considered healthy."
+        return "Great choice! This dish is well-balanced and nutritious."
     elif level >= 7:
-        return "Moderately recommended. It is not bad for your health."
+        return "Reasonably balanced. Could be improved with more variety."
     else:
-        return "Not recommended. It is not good for your stomach."
+        return "Not a balanced meal. Consider adjusting the portions."
 
 # IMAGE CLASSIFICATION
 class_labels = {
@@ -373,13 +390,23 @@ while True:
                 else:
                     output = "No image selected."
             elif cmd == "35":
-                output = "On a scale of 0–10, how spicy is the food? "
+                output = "On a scale of 0–10, how much protein does the meal contain? "
                 translated_output = translate(output, language_code)
-                spice = float(input(translated_output))
-                output = "On a scale of 0–10, how healthy is the food? "
+                protein = float(input(translated_output))
+
+                output = "On a scale of 0–10, how much vegetables are in the meal? "
                 translated_output = translate(output, language_code)
-                health = float(input(translated_output))
-                response = get_recommendation(spice, health)
+                vegetables = float(input(translated_output))
+
+                output = "On a scale of 0–10, how much carbohydrates does the meal contain? "
+                translated_output = translate(output, language_code)
+                carbs = float(input(translated_output))
+
+                output = "On a scale of 0–10, how much fruit is included in the meal? "
+                translated_output = translate(output, language_code)
+                fruits = float(input(translated_output))
+
+                response = get_recommendation(protein, vegetables, carbs, fruits)
 
         else:
             if not response or response.startswith("WARNING"):
