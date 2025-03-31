@@ -24,9 +24,9 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 
 warnings.filterwarnings("ignore")
 
-# nltk.download('punkt')
-# nltk.download('wordnet')
-# nltk.download('averaged_perceptron_tagger')
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
 
 model = load_model("eff_model.keras")
 
@@ -109,13 +109,13 @@ def get_recipe(ingredient):
 })
 
     if response.status_code != 200:
-        return "Sorry, I couldn't find that recipe right now. Try again later."
+        return f"Sorry, I couldn't find that recipe right now. Try again later." , ""
 
     soup = BeautifulSoup(response.text, 'html.parser')
     recipes = soup.find_all("h2", class_="heading-4")
 
     if not recipes:
-        return "No recipes found for that ingredient."
+        return f"No recipes found for that ingredient.", ""
 
     recipe = recipes[0].text.strip()
     endpoint = recipes[0].find_parent("a")["href"]
@@ -386,19 +386,51 @@ while True:
             elif cmd == "35":
                 output = "On a scale of 0–10, how much protein does the meal contain? "
                 translated_output = translate(output, language_code)
-                protein = float(input(translated_output))
+                while True:
+                    try:
+                        protein = float(input(translated_output))
+                        if 0 <= protein <= 10:
+                            break
+                        else:
+                            print("Please enter a number between 0 and 10.")
+                    except ValueError:
+                        print("Please enter a valid number.")
 
                 output = "On a scale of 0–10, how much vegetables are in the meal? "
                 translated_output = translate(output, language_code)
-                vegetables = float(input(translated_output))
+                while True:
+                    try:
+                        vegetables = float(input(translated_output))
+                        if 0 <= vegetables <= 10:
+                            break
+                        else:
+                            print("Please enter a number between 0 and 10.")
+                    except ValueError:
+                        print("Please enter a valid number.")
 
                 output = "On a scale of 0–10, how much carbohydrates does the meal contain? "
                 translated_output = translate(output, language_code)
-                carbs = float(input(translated_output))
+                while True:
+                    try:
+                        carbs = float(input(translated_output))
+                        if 0 <= carbs <= 10:
+                            break
+                        else:
+                            print("Please enter a number between 0 and 10.")
+                    except ValueError:
+                        print("Please enter a valid number.")
 
                 output = "On a scale of 0–10, how much fruit is included in the meal? "
                 translated_output = translate(output, language_code)
-                fruits = float(input(translated_output))
+                while True:
+                    try:
+                        fruits = float(input(translated_output))
+                        if (0 <= fruits<= 10):
+                            break
+                        else:
+                            print("Please enter a number between 0 and 10.")
+                    except ValueError:
+                        print("Please enter a valid number.")
 
                 response = get_recommendation(protein, vegetables, carbs, fruits)
 
